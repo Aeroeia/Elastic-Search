@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: es
+  profiles:
+    active: local
+  main:
+    allow-circular-references: true
+  datasource:
+    druid:
+      driver-class-name: ${sky.datasource.driver-class-name}
+      url: jdbc:mysql://${sky.datasource.host}:${sky.datasource.port}/${sky.datasource.database}?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
+      username: ${sky.datasource.username}
+      password: ${sky.datasource.password}
+  redis:
+    host: 192.168.112.128
+    port: 6379
+server:
+  port: 8080
+mybatis-plus:
+  mapper-locations: classpath*:mapper/*.xml
+  type-aliases-package: com.mis.backend.entity
+  type-handlers-package: com.baomidou.mybatisplus.extension.handlers
+  global-config:
+    db-config:
+      id-type: auto
+  configuration:
+    default-enum-type-handler: com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler
+
+logging:
+  level:
+    com:
+     aer:
+      es: info
