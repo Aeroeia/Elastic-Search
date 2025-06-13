@@ -4,9 +4,11 @@ export interface Product {
   price: number;
   image: string;
   description: string;
+  brand?: string;
+  category?: string;
+  highlight?: string;
 }
 
 export interface SearchSuggestion {
   text: string;
-  id: number;
 } 

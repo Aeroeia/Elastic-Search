@@ -8,55 +8,16 @@ import logo from './assets/vue.svg';
 const searchQuery = ref('');
 const products = ref<Product[]>([]);
 
-// 模拟数据
-const mockProducts: Product[] = [
-  {
-    id: 1,
-    name: 'MacBook Pro M3',
-    price: 14999,
-    image: 'https://store.storeimages.cdn-apple.com/8756/as-images.apple.com/is/mbp14-m3-max-pro-spaceblack-select-202310?wid=452&hei=420&fmt=jpeg&qlt=95&.v=1697311054290',
-    description: '搭载 M3 芯片的 MacBook Pro，性能强劲，续航持久'
-  },
-  {
-    id: 2,
-    name: 'MacBook Air M2',
-    price: 9999,
-    image: 'https://store.storeimages.cdn-apple.com/8756/as-images.apple.com/is/mba15-midnight-select-202306?wid=452&hei=420&fmt=jpeg&qlt=95&.v=1684518479433',
-    description: '轻薄便携的 MacBook Air，采用 M2 芯片，完美平衡性能与便携性'
-  },
-  {
-    id: 3,
-    name: 'MacBook Pro 16"',
-    price: 18999,
-    image: 'https://store.storeimages.cdn-apple.com/8756/as-images.apple.com/is/mbp16-m3-max-pro-spaceblack-select-202310?wid=452&hei=420&fmt=jpeg&qlt=95&.v=1697311054293',
-    description: '16 英寸大屏幕 MacBook Pro，专业人士的理想之选'
-  },
-  {
-    id: 4,
-    name: 'MacBook Air M1',
-    price: 7999,
-    image: 'https://store.storeimages.cdn-apple.com/8756/as-images.apple.com/is/macbook-air-space-gray-select-201810?wid=452&hei=420&fmt=jpeg&qlt=95&.v=1633027804000',
-    description: '入门级 MacBook Air，M1 芯片带来的强大性能'
-  }
-];
-
 const fetchProducts = async (query: string = '') => {
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500)); // 添加延迟以模拟网络请求
-    
-    if (query) {
-      // 如果有搜索关键词，进行过滤
-      products.value = mockProducts.filter(product => 
-        product.name.toLowerCase().includes(query.toLowerCase()) ||
-        product.description.toLowerCase().includes(query.toLowerCase())
-      );
-    } else {
-      // 没有搜索关键词时显示所有商品
-      products.value = mockProducts;
+    const response = await fetch(`/es/search?keyword=${encodeURIComponent(query)}`);
+    if (!response.ok) {
+      throw new Error('获取商品数据失败');
     }
+    products.value = await response.json();
   } catch (error) {
     console.error('获取商品数据失败:', error);
+    products.value = [];
   }
 };
 
@@ -138,8 +99,8 @@ body {
 }
 
 .logo img {
-  max-width: 100%;
-  max-height: 100%;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
 }
 
@@ -155,11 +116,10 @@ body {
 }
 
 .page-title {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 600;
-  color: #333;
   margin-bottom: 24px;
-  text-align: center;
+  color: #1a1a1a;
 }
 
 @media (max-width: 768px) {
@@ -167,18 +127,13 @@ body {
     padding: 0 16px;
     gap: 24px;
   }
-
-  .logo {
-    width: 80px;
-    height: 32px;
-  }
-
+  
   .content-wrapper {
     padding: 0 16px;
   }
-
+  
   .page-title {
-    font-size: 24px;
+    font-size: 20px;
     margin-bottom: 16px;
   }
 }

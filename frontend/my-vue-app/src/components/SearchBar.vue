@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, onUnmounted } from 'vue';
-import type { SearchSuggestion } from '../types/product';
 
 const props = defineProps<{
   modelValue: string;
@@ -12,21 +11,44 @@ const emit = defineEmits<{
 }>();
 
 const searchInput = ref(props.modelValue);
-const suggestions = ref<SearchSuggestion[]>([]);
+const suggestions = ref<string[]>([]);
 const showSuggestions = ref(false);
 const searchContainerRef = ref<HTMLElement | null>(null);
-const isSelectingSuggestion = ref(false);  // 新增：标记是否正在选择建议项
+const isSelectingSuggestion = ref(false);
+const debounceTimer = ref<number | null>(null);
 
-// 模拟搜索建议数据
-const mockSuggestions: SearchSuggestion[] = [
-  { text: 'MacBook Pro M3', id: 1 },
-  { text: 'MacBook Air M2', id: 2 },
-  { text: 'MacBook Pro 16寸', id: 3 },
-  { text: 'MacBook Air M1', id: 4 },
-  { text: 'MacBook Pro M2', id: 5 },
-  { text: 'MacBook Air 13寸', id: 6 },
-  { text: 'MacBook Pro M1', id: 7 }
-];
+// 防抖函数
+const debounce = (fn: Function, delay: number) => {
+  if (debounceTimer.value) {
+    clearTimeout(debounceTimer.value);
+  }
+  debounceTimer.value = window.setTimeout(() => {
+    fn();
+    debounceTimer.value = null;
+  }, delay);
+};
+
+// 获取搜索建议
+const fetchSuggestions = async (value: string) => {
+  if (!value.trim()) {
+    suggestions.value = [];
+    showSuggestions.value = false;
+    return;
+  }
+
+  try {
+    const response = await fetch(`/es/suggestions?keyword=${encodeURIComponent(value)}`);
+    if (!response.ok) {
+      throw new Error('获取搜索建议失败');
+    }
+    suggestions.value = await response.json();
+    showSuggestions.value = suggestions.value.length > 0;
+  } catch (error) {
+    console.error('获取搜索建议失败:', error);
+    suggestions.value = [];
+    showSuggestions.value = false;
+  }
+};
 
 // 处理点击外部区域
 const handleClickOutside = (event: MouseEvent) => {
@@ -42,41 +64,32 @@ const handleFocus = () => {
   }
 };
 
-watch(() => searchInput.value, async (newValue) => {
+// 监听输入变化
+watch(() => searchInput.value, (newValue) => {
   if (isSelectingSuggestion.value) {
     isSelectingSuggestion.value = false;  // 重置标记
     return;  // 如果是选择建议项导致的变化，直接返回
   }
 
-  if (newValue.trim()) {
-    try {
-      // 模拟API调用延迟
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      // 根据输入过滤建议
-      suggestions.value = mockSuggestions.filter(suggestion => 
-        suggestion.text.toLowerCase().includes(newValue.toLowerCase())
-      );
-      showSuggestions.value = suggestions.value.length > 0;
-    } catch (error) {
-      console.error('获取搜索建议失败:', error);
-    }
-  } else {
-    suggestions.value = [];
-    showSuggestions.value = false;
-  }
+  // 使用防抖处理搜索建议请求
+  debounce(() => fetchSuggestions(newValue), 300);
 });
 
 const handleSearch = () => {
+  if (debounceTimer.value) {
+    clearTimeout(debounceTimer.value);
+  }
   emit('search', searchInput.value);
   showSuggestions.value = false;
 };
 
-const selectSuggestion = (suggestion: SearchSuggestion) => {
-  isSelectingSuggestion.value = true;  // 设置标记，表示正在选择建议项
-  searchInput.value = suggestion.text;
-  emit('update:modelValue', suggestion.text);
-  emit('search', suggestion.text);
+const selectSuggestion = (suggestion: string) => {
+  isSelectingSuggestion.value = true;
+  // 移除高亮标签获取纯文本
+  const plainText = suggestion.replace(/<\/?em>/g, '');
+  searchInput.value = plainText;
+  emit('update:modelValue', plainText);
+  emit('search', plainText);
   showSuggestions.value = false;
 };
 
@@ -87,6 +100,10 @@ onMounted(() => {
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside);
+  // 清理可能存在的定时器
+  if (debounceTimer.value) {
+    clearTimeout(debounceTimer.value);
+  }
 });
 </script>
 
@@ -110,14 +127,13 @@ onUnmounted(() => {
     <div v-if="showSuggestions && suggestions.length > 0" class="suggestions-container">
       <ul class="suggestions-list">
         <li
-          v-for="suggestion in suggestions"
-          :key="suggestion.id"
+          v-for="(suggestion, index) in suggestions"
+          :key="index"
           class="suggestion-item"
           @click="selectSuggestion(suggestion)"
           @mousedown.prevent
+          v-html="suggestion"
         >
-          <span class="suggestion-icon">🔍</span>
-          {{ suggestion.text }}
         </li>
       </ul>
     </div>
@@ -225,6 +241,12 @@ onUnmounted(() => {
 .suggestion-icon {
   color: #999;
   font-size: 14px;
+}
+
+:deep(em) {
+  color: #ff4d4f;
+  font-style: normal;
+  font-weight: bold;
 }
 
 @media (max-width: 768px) {

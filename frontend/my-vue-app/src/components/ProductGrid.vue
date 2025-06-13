@@ -13,8 +13,11 @@ defineProps<{
         <img :src="product.image" :alt="product.name" />
       </div>
       <div class="product-info">
-        <h3 class="product-name">{{ product.name }}</h3>
-        <p class="product-description">{{ product.description }}</p>
+        <h3 class="product-name" v-html="product.highlight || product.name"></h3>
+        <div class="product-meta" v-if="product.brand || product.category">
+          <span v-if="product.brand" class="meta-item">品牌：{{ product.brand }}</span>
+          <span v-if="product.category" class="meta-item">类别：{{ product.category }}</span>
+        </div>
         <div class="product-price">
           <span class="price-symbol">¥</span>
           <span class="price-amount">{{ product.price.toLocaleString('zh-CN', { minimumFractionDigits: 2 }) }}</span>
@@ -84,6 +87,20 @@ defineProps<{
   line-height: 1.4;
 }
 
+.product-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 14px;
+  color: #666;
+}
+
+.meta-item {
+  background: #f5f5f5;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
 .product-description {
   margin: 0;
   font-size: 14px;
@@ -112,6 +129,12 @@ defineProps<{
 
 .price-amount {
   font-size: 24px;
+}
+
+:deep(em) {
+  color: #ff4d4f;
+  font-style: normal;
+  font-weight: bold;
 }
 
 @media (max-width: 768px) {
