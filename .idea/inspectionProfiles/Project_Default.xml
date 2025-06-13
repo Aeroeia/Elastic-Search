@@ -1,0 +1,26 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="VulnerableLibrariesLocal" enabled="false" level="WARNING" enabled_by_default="false">
+      <option name="isIgnoringEnabled" value="true" />
+      <option name="ignoredModules">
+        <list>
+          <option value="Es" />
+          <option value="Es" />
+        </list>
+      </option>
+      <option name="ignoredPackages">
+        <list>
+          <option value="org.elasticsearch:elasticsearch:7.12.1" />
+          <option value="com.fasterxml.jackson.core:jackson-core:2.13.5" />
+        </list>
+      </option>
+      <option name="ignoredReasons">
+        <list>
+          <option value="不可利用" />
+          <option value="进行中" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>
