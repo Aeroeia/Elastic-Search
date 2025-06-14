@@ -4,7 +4,7 @@
 
 ### 后端 
 - Spring Boot
-- RestHighClient
+- RestHighLevelClient
 - SpringCache-Redis
 - Mybatis-Plus
 - SpringTask
