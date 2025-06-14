@@ -1,4 +1,4 @@
-# Search Suggestion System
+# 仿电商搜索Demo
 
 一个基于 Elasticsearch+Redis 仿电商搜索Demo，支持中文分词和实时搜索建议。
 
